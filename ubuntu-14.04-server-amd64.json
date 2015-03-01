@@ -1,0 +1,54 @@
+{
+	"builders": [{
+		"boot_command" : [
+			"<esc><esc><enter><wait>",
+			"/install/vmlinuz noapic preseed/url=http://{{ .HTTPIP }}:{{ .HTTPPort }}/ubuntu-14.04-server-amd64.preseed.cfg <wait>",
+			"debian-installer=en_US auto locale=en_AU kbd-chooser/method=us <wait>",
+			"hostname={{ .Name }} <wait>",
+			"fb=false debconf/frontend=noninteractive <wait>",
+			"keyboard-configuration/modelcode=SKIP keyboard-configuration/layout=USA keyboard-configuration/variant=USA console-setup/ask_detect=false <wait>",
+			"initrd=/install/initrd.gz -- <enter><wait>"
+		],
+		"boot_wait" : "5s",
+		
+		"guest_additions_path": "VBoxGuestAdditions_{{ .Version }}.iso",
+		"guest_os_type": "Ubuntu_64",
+		
+		"headless": false,
+		
+		"http_directory": "http",
+
+		"iso_checksum" : "3bfa6eac84d527380d0cc52db9092cde127f161e",
+		"iso_checksum_type": "sha1",
+		"iso_url": "http://releases.ubuntu.com/14.04/ubuntu-14.04.2-server-amd64.iso",
+
+		"shutdown_command": "echo 'shutdown -P now' > shutdown.sh; echo 'vagrant'|sudo -S sh 'shutdown.sh'",
+
+		"ssh_password": "vagrant",
+		"ssh_port": 22,
+		"ssh_username" : "vagrant",
+		"ssh_wait_timeout": "10000s",
+		
+		"type": "virtualbox-iso",
+
+		"vboxmanage": [
+			["modifyvm", "{{.Name}}","--memory","1024"],
+			["modifyvm", "{{.Name}}","--cpus","2"]
+		]
+	}],
+	"post-processors": [
+		"vagrant"
+	],
+	"provisioners": [{
+		"type": "shell",
+		"execute_command":"echo 'vagrant' | {{.Vars}} sudo -S -E bash '{{.Path}}'",
+		"inline": ["sudo sh -c 'echo \"vagrant ALL=(ALL) NOPASSWD: ALL\" >> /etc/sudoers'"]
+	},
+	{
+		"type":"shell",
+		"execute_command":"echo 'vagrant' | {{.Vars}} sudo -S -E bash '{{.Path}}'",
+		"scripts": [
+			"scripts/vboxguest.sh"
+		]
+	}]
+}
